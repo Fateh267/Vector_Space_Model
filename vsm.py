@@ -2,12 +2,11 @@ import glob
 import nltk
 nltk.download('popular')
 from nltk.corpus import stopwords
+import numpy as np
 from nltk import word_tokenize
 from collections import defaultdict
 import string
-from collections import Counter
-import numpy as np
-from collections import OrderedDict
+
 
 def create_dic(path):
   dic = {}
@@ -65,19 +64,19 @@ def termFrequencyInDoc(word_list, dic):
 
 '''
 the function uses the defaultdict data structure to automatically 
-create a new entry for each word in the vocabulary, 
+create a new entry for each word in the word_setulary, 
 initialized with a count of zero. It also uses the set function to 
 extract unique words from each document, 
 avoiding the need to count the same word multiple times within the same document. 
 Finally, it returns a standard Python dictionary instead of a defaultdict for convenience.
 '''
 
-def wordDocFre(vocab, doc_dict):
+def wordDocFre(word_set, doc_dict):
     df = defaultdict(int)
     for doc in doc_dict.values():
         words = set(word_tokenize(doc.lower().strip()))
         for word in words:
-            if word in vocab:
+            if word in word_set:
                 df[word] += 1
     return dict(df)
 
@@ -106,7 +105,7 @@ def tfidf(word_list, tf, idf, doc_dict):
 
 
 '''
-this function uses a set instead of a list to store the query vocabulary, 
+this function uses a set instead of a list to store the query word_setulary, 
 which eliminates the need for a duplicate check. 
 It also includes a check for missing terms in the tfidf dictionary using the in operator to prevent a 
 KeyError from occurring.
@@ -115,16 +114,16 @@ If a term is not present in the tfidf dictionary for a particular document, the 
 '''
 
 def vectorSpaceModel(query, docs, tfidf):
-    query_vocab = set(query.lower().split())
+    query_word_set = set(query.lower().split())
 
     query_wc = {}
-    for word in query_vocab:
+    for word in query_word_set:
         query_wc[word] = query.lower().split().count(word)
 
     relevance_scores = {}
     for doc_id, doc in docs.items():
         score = 0
-        for word in query_vocab:
+        for word in query_word_set:
             if word in tfidf[doc_id]:
                 score += query_wc[word] * tfidf[doc_id][word]
         relevance_scores[doc_id] = score
@@ -139,12 +138,12 @@ if __name__  == "__main__":
 
   path = 'Corpus/*.txt'
   docs = create_dic(path)
-  w_List = normalized_wordlist(docs)           #returns a list of tokenized words
-  vocab = list(set(w_List))                     #returns a list of unique words
-  tf_dict = termFrequencyInDoc(vocab, docs)     #returns term frequency
-  df_dict = wordDocFre(vocab, docs)             #returns document frequencies
-  idf_dict = inverseDocFre(vocab,df_dict,41)     #returns idf scores
-  tf_idf = tfidf(vocab,tf_dict,idf_dict,docs)   #returns tf-idf socres
+  word_list = normalized_wordlist(docs)           #returns a list of tokenized words
+  word_set = list(set(word_list))                     #returns a list of unique words
+  tf_dict = termFrequencyInDoc(word_set, docs)     #returns term frequency
+  df_dict = wordDocFre(word_set, docs)             #returns document frequencies
+  idf_dict = inverseDocFre(word_set,df_dict,41)     #returns idf scores
+  tf_idf = tfidf(word_set,tf_dict,idf_dict,docs)   #returns tf-idf socres
 
   query1 = 'Developing your Zomato business account and profile is a great way to boost your restaurant’s online reputation'
   query2 = 'Warwickshire, came from an ancient family and was the heiress to some land'
